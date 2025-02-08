@@ -12,7 +12,7 @@ class _AtestState extends State<Atest> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
+        home: Scaffold(
       appBar: AppBar(
         title: const Text("Light Control",
             style: TextStyle(color: Colors.white, fontSize: 30)),
@@ -20,17 +20,14 @@ class _AtestState extends State<Atest> {
         centerTitle: true,
       ),
       body: const Item(),
-    )
-    );
-    
-
+    ));
   }
 }
 
 void main() {
   runApp(const Atest());
 }
-
+//Hello
 //MaterialApp(
     // title: "My Title",
     // // Scaffold(
