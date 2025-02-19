@@ -14,6 +14,7 @@ class _MyWidgetState extends State<Item> {
   double Val2 = 0;
   double Val3 = 0;
   double Val4 = 0;
+  bool mode = true;
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +35,7 @@ class _MyWidgetState extends State<Item> {
                   onChanged: (value) {
                     setState(() {
                       Val0 = value;
+                      mode = false;
                     });
                   },
                 ),
@@ -53,6 +55,7 @@ class _MyWidgetState extends State<Item> {
                   onChanged: (value) {
                     setState(() {
                       Val1 = value;
+                      mode = false;
                     });
                   },
                 ),
@@ -72,6 +75,7 @@ class _MyWidgetState extends State<Item> {
                   onChanged: (value) {
                     setState(() {
                       Val2 = value;
+                      mode = false;
                     });
                   },
                 ),
@@ -91,6 +95,7 @@ class _MyWidgetState extends State<Item> {
                   onChanged: (value) {
                     setState(() {
                       Val3 = value;
+                      mode = false;
                     });
                   },
                 ),
@@ -110,12 +115,21 @@ class _MyWidgetState extends State<Item> {
                   onChanged: (value) {
                     setState(() {
                       Val4 = value;
+                      mode = false;
                     });
                   },
                 ),
               ),
               sidelabel(Val4)
             ],
+          ),
+          OutlinedButton(
+            onPressed: () {
+              setState(() {
+                mode = !mode;
+              });
+            },
+            child: mode ? Text("Auto") : Text("Maual"),
           ),
         ],
       )),
