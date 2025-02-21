@@ -130,6 +130,7 @@ class _MyWidgetState extends State<Item> {
               });
             },
             child: mode ? Text("Auto") : Text("Maual"),
+            style: ButtonStyle(foregroundColor: WidgetStatePropertyAll<Color>(mode ? Colors.green : Colors.red)),
           ),
         ],
       )),
