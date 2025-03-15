@@ -5,30 +5,45 @@ class Item extends StatefulWidget {
   const Item({super.key});
 
   @override
-  State<Item> createState() => _MyWidgetState();
+  State<Item> createState() => _ItemState();
 }
 
-class _MyWidgetState extends State<Item> {
-  double sliderWidth = 300;
-  List<double> dataPercent = [0, 0, 0, 0, 0];
-  List<double> dataForCom = [0, 0, 0, 0, 0];
-  bool mode = true;
-
+class _ItemState extends State<Item> {
   BluetoothDevice? _device;
   BluetoothCharacteristic? _characteristic;
+  List<BluetoothDevice> availableDevices = [];
+  bool isConnected = false;
 
   @override
   void initState() {
     super.initState();
-    connectToFirstPairedDevice(); // Auto-connect on startup
+    scanForDevices();
   }
 
-  void connectToFirstPairedDevice() async {
-    List<BluetoothDevice> bondedDevices = await FlutterBluePlus.bondedDevices;
-    if (bondedDevices.isNotEmpty) {
-      _device = bondedDevices.first; // Connect to the first paired device
+  void scanForDevices() async {
+    print("Scanning for BLE devices...");
+    FlutterBluePlus.startScan(timeout: Duration(seconds: 5));
+    
+    FlutterBluePlus.scanResults.listen((results) {
+      setState(() {
+        availableDevices = results.map((r) => r.device).where((d) => d.name.isNotEmpty).toList();
+      });
+    });
+  }
+
+  void connectToDevice(BluetoothDevice device) async {
+    setState(() {
+      _device = device;
+      isConnected = false;
+    });
+    try {
       await _device!.connect();
+      setState(() {
+        isConnected = true;
+      });
       discoverServices();
+    } catch (e) {
+      print("Connection failed: \$e");
     }
   }
 
@@ -41,6 +56,7 @@ class _MyWidgetState extends State<Item> {
           setState(() {
             _characteristic = characteristic;
           });
+          print("Writable characteristic found!");
         }
       }
     }
@@ -48,154 +64,66 @@ class _MyWidgetState extends State<Item> {
 
   void sendData(String message) async {
     if (_characteristic != null) {
-      await _characteristic!.write(message.codeUnits);
+      try {
+        print("Sending: \$message");
+        await _characteristic!.write(message.codeUnits);
+      } catch (error) {
+        print("Write failed: \$error");
+      }
+    } else {
+      print("No writable characteristic found!");
     }
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-          decoration: BoxDecoration(image: DecorationImage(image: AssetImage("images/rickroll.jpg"),fit: BoxFit.cover)),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Text(dataForCom[0].toString()),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: sliderWidth,
-                    child: Slider(
-                      value: dataPercent[0],
-                      min: 0,
-                      max: 100,
-                      onChanged: (value) {
-                        setState(() {
-                          dataPercent[0] = (value > 99) ? 100 : value;
-                          dataForCom[0] =
-                              (value > 99) ? 1023 : (910 * value) / 99;
-                          mode = false;
-                          sendData("HelloWorld0");
-                        });
-                      },
-                    ),
-                  ),
-                  sidelabel(dataPercent[0])
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: sliderWidth,
-                    child: Slider(
-                      value: dataPercent[1],
-                      min: 0,
-                      max: 100,
-                      onChanged: (value) {
-                        setState(() {
-                          dataPercent[1] = (value > 99) ? 100 : value;
-                          dataForCom[1] =
-                              (value > 99) ? 1023 : (910 * value) / 99;
-                          mode = false;
-                          sendData("HelloWorld1");
-                        });
-                      },
-                    ),
-                  ),
-                  sidelabel(dataPercent[1])
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: sliderWidth,
-                    child: Slider(
-                      value: dataPercent[2],
-                      min: 0,
-                      max: 100,
-                      onChanged: (value) {
-                        setState(() {
-                          dataPercent[2] = (value > 99) ? 100 : value;
-                          dataForCom[2] =
-                              (value > 99) ? 1023 : (910 * value) / 99;
-                          mode = false;
-                          sendData("HelloWorld2");
-                        });
-                      },
-                    ),
-                  ),
-                  sidelabel(dataPercent[2])
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: sliderWidth,
-                    child: Slider(
-                      value: dataPercent[3],
-                      min: 0,
-                      max: 100,
-                      onChanged: (value) {
-                        setState(() {
-                          dataPercent[3] = (value > 99) ? 100 : value;
-                          dataForCom[3] =
-                              (value > 99) ? 1023 : (910 * value) / 99;
-                          mode = false;
-                          sendData("HelloWorld3");
-                        });
-                      },
-                    ),
-                  ),
-                  sidelabel(dataPercent[3])
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: sliderWidth,
-                    child: Slider(
-                      value: dataPercent[4],
-                      min: 0,
-                      max: 100,
-                      onChanged: (value) {
-                        setState(() {
-                          dataPercent[4] = (value > 99) ? 100 : value;
-                          dataForCom[4] =
-                              (value > 99) ? 1023 : (910 * value) / 99;
-                          mode = false;
-                          sendData("HelloWorld4");
-                        });
-                      },
-                    ),
-                  ),
-                  sidelabel(dataPercent[4])
-                ],
-              ),
-              OutlinedButton(
-                onPressed: () {
-                  setState(() {
-                    mode = !mode;
-                  });
-                },
-                child: mode ? Text("Auto") : Text("Maual"),
-                style: ButtonStyle(
-                    foregroundColor: WidgetStatePropertyAll<Color>(
-                        mode ? Colors.green : Colors.red)),
-              ),
-            ],
-          )),
+      appBar: AppBar(
+        title: Text("BLE Device Selection"),
+        actions: [
+          DropdownButton<BluetoothDevice>(
+            hint: Text("Select Device"),
+            value: _device,
+            onChanged: (BluetoothDevice? device) {
+              if (device != null) {
+                connectToDevice(device);
+              }
+            },
+            items: availableDevices.map((device) {
+              return DropdownMenuItem(
+                value: device,
+                child: Text(device.name.isNotEmpty ? device.name : device.id.toString()),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(isConnected ? "Connected to: \${_device?.name}" : "Not Connected"),
+          for (int i = 0; i < 5; i++) buildSlider(i),
+        ],
+      ),
     );
   }
 
-  Widget sidelabel(double value) => Container(
-        width: 40,
-        child: Text(
-          value.toStringAsFixed(1),
-          textAlign: TextAlign.center,
+  Widget buildSlider(int index) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: 300,
+          child: Slider(
+            value: 50, // Placeholder value
+            min: 0,
+            max: 100,
+            onChanged: (value) {
+              sendData("HelloWorld\$index");
+            },
+          ),
         ),
-      );
+      ],
+    );
+  }
 }
