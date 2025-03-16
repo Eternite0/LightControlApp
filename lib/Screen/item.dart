@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class Item extends StatefulWidget {
   const Item({super.key});
@@ -17,16 +18,26 @@ class _ItemState extends State<Item> {
   @override
   void initState() {
     super.initState();
+    requestPermissions();
     scanForDevices();
+  }
+
+  void requestPermissions() async {
+    await Permission.bluetoothScan.request();
+    await Permission.bluetoothConnect.request();
+    await Permission.location.request();
   }
 
   void scanForDevices() async {
     print("Scanning for BLE devices...");
     FlutterBluePlus.startScan(timeout: Duration(seconds: 5));
-    
+
     FlutterBluePlus.scanResults.listen((results) {
       setState(() {
-        availableDevices = results.map((r) => r.device).where((d) => d.name.isNotEmpty).toList();
+        availableDevices = results
+            .map((r) => r.device)
+            .where((d) => d.name.isNotEmpty)
+            .toList();
       });
     });
   }
@@ -92,7 +103,9 @@ class _ItemState extends State<Item> {
             items: availableDevices.map((device) {
               return DropdownMenuItem(
                 value: device,
-                child: Text(device.name.isNotEmpty ? device.name : device.id.toString()),
+                child: Text(device.name.isNotEmpty
+                    ? device.name
+                    : device.id.toString()),
               );
             }).toList(),
           ),
@@ -101,7 +114,9 @@ class _ItemState extends State<Item> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(isConnected ? "Connected to: \${_device?.name}" : "Not Connected"),
+          Text(isConnected
+              ? "Connected to: \${_device?.name}"
+              : "Not Connected"),
           for (int i = 0; i < 5; i++) buildSlider(i),
         ],
       ),
